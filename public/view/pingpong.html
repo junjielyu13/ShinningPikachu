@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Ping Pong Game with Three.js</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        @-webkit-keyframes rotateOnX {
+          to {
+            -webkit-transform: rotateX(360deg);
+                    transform: rotateX(360deg);
+          }
+        }
+
+        @keyframes rotateOnX {
+          to {
+            -webkit-transform: rotateX(360deg);
+                    transform: rotateX(360deg);
+          }
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        var renderer = new THREE.WebGLRenderer();
+        //renderer.setClearColorHex( 0x000000, 1 );
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        var geometryBall = new THREE.SphereGeometry(1, 15, 15);
+        var geometryBox = new THREE.BoxGeometry(1, 1, 1);
+
+        var materialBall = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        var materialBox = new THREE.MeshBasicMaterial({ color: 	0xffc0cb});
+
+
+
+        var ball = new THREE.Mesh(geometryBall, materialBall);
+        ball.scale.set(0.25, 0.25, 0.25)
+        ball.position.set(0, 0, -10);
+        scene.add(ball);
+
+        var paddleA = new THREE.Mesh(geometryBox, materialBox);
+        paddleA.position.set(0, -7, -10);
+        paddleA.scale.set(5, 0.25, 0.25);
+        scene.add(paddleA);
+
+        var paddleB = new THREE.Mesh(geometryBox, materialBox);
+        paddleB.position.set(0, 7, -10);
+        paddleB.scale.set(5, 0.25, 0.25);
+        scene.add(paddleB);
+
+        var ballSpeedX = 0.1;
+        var ballSpeedY = 0.1;
+
+        function moveBall() {
+            var ballX = ball.position.x;
+            var ballY = ball.position.y;
+
+            // Check for collisions with the walls
+            if (ballX > 4 || ballX < -4) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            // Check for collisions with the paddles
+            if (ballY > paddleA.position.y - 1 && ballY < paddleA.position.y + 1 && ballX > paddleA.position.x - 2.5 && ballX < paddleA.position.x + 2.5 ||
+                ballY > paddleB.position.y - 1 && ballY < paddleB.position.y + 1 && ballX > paddleB.position.x - 2.5 && ballX < paddleB.position.x + 2.5) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            // Move the ball to its new position
+            ball.position.x += ballSpeedX;
+            ball.position.y += ballSpeedY;
+        }
+
+      // Handle keyboard events
+      function handleKeyDown(event) {
+        var keyCode = event.keyCode;
+
+        if (keyCode == 39) {
+          paddleA.position.x += 0.3;
+          /*
+          var normalizedX = (window.innerWidth / window.innerWidth) * 2 - 1;
+          var normalizedY = -(window.innerHeight / window.innerHeight) * 2 + 1;
+
+          var position = new THREE.Vector3(normalizedX, normalizedY, 1);
+          position.unproject(camera);
+
+          var pixelPosition = new THREE.Vector3();
+          pixelPosition.copy(paddleA.position).project(camera);*/
+
+          if(paddleA.position.x > 12) paddleA.position.x = 12;
+        } else if (keyCode == 37) {
+          paddleA.position.x -= 0.3;
+          if(paddleA.position.x < -12) paddleA.position.x = -12;
+        }
+
+      }
+
+    document.addEventListener("keydown", handleKeyDown);
+    // Render the scene
+    function animate() {
+        requestAnimationFrame(animate);
+        moveBall();
+        renderer.render(scene, camera);
+    }
+
+    // Handle window resizing
+    window.addEventListener('resize', function() {
+        console.log("Width" + window.innerWidth);
+        console.log("Height" +  window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
+</script>
+</body>
+</html>
