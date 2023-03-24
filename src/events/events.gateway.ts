@@ -17,16 +17,29 @@ import { Server } from 'socket.io';
 export class EventsGateway {
   @WebSocketServer()
   server: Server;
-
-  @SubscribeMessage('events')
-  findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
-    return from([1, 2, 3]).pipe(
-      map((item) => ({ event: 'events', data: item })),
-    );
-  }
+  playerNum = 0;
 
   @SubscribeMessage('identity')
   async identity(@MessageBody() data: number): Promise<number> {
-    return data;
+    if (data == 1) {
+      this.playerNum += 1;
+      if (this.playerNum % 2) {
+        return 100;
+      } else {
+        return 200;
+      }
+    }
+  }
+
+  // @SubscribeMessage('events')
+  // findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
+  //   return from([1, 2, 3]).pipe(
+  //     map((item) => ({ event: 'events', data: item })),
+  //   );
+  // }
+
+  @SubscribeMessage('action')
+  async action(@MessageBody() data: number): Promise<number> {
+    return data + 200;
   }
 }
