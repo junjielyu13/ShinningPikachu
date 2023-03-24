@@ -7,8 +7,18 @@ socket.on('connect', function () {
   socket.emit('identity', 1, (response) => console.log('Identity:', response));
 });
 
-// socket.on('events', function (data) {
-//   console.log('event', data);
+socket.on('events', function (data) {
+  console.log('event', data);
+});
+
+socket.on('response', function (data) {
+  console.log('messagedsadasdasd :');
+  console.log('message: ' + data);
+});
+
+// socket.on('response', (msg) => {
+//   console.log('messagedsadasdasd :');
+//   console.log('message: ' + msg);
 // });
 
 socket.on('exception', function (data) {
