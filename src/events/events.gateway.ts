@@ -13,6 +13,7 @@ import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
+import { AnySrvRecord } from 'dns';
 
 @WebSocketGateway({
   cors: {
@@ -24,11 +25,12 @@ export class EventsGateway {
   server: Server;
   wsClients = [];
   playerNum = 0;
+  id = 10000;
+  playerDic = [];
 
   handleConnection(client: any) {
     Logger.log('"push!!!');
     this.wsClients.push(client);
-    this.broadcast('events', 'test!!!dadasd');
     Logger.log('num: ', this.wsClients.length);
   }
 
@@ -79,5 +81,13 @@ export class EventsGateway {
     Logger.log('"actionn!!!');
     this.broadcast('response', 'test!!!dadasd');
     return data + 200;
+  }
+
+  @SubscribeMessage('move')
+  async move(
+    @MessageBody() data: number,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    this.broadcast('move', data);
   }
 }
