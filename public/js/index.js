@@ -34,3 +34,16 @@ function sendAction() {
   socket.emit('action', 2, (response) => console.log('reback:', response));
   console.log('emiit!!!!');
 }
+
+window.addEventListener('mousemove', function (event) {
+  var mouseX = (event.clientX / window.innerHeight) * 8 - 4;
+  movePaddleA(mouseX);
+  socket.emit('move', mouseX);
+  //movePaddleB(event);
+});
+
+socket.on('move', function (data) {
+  console.log('recib');
+  console.log(data);
+  movePaddleB(data);
+});
