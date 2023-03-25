@@ -24,7 +24,7 @@
     document.body.appendChild(renderer.domElement);
 
     var geometrybackground = new THREE.BoxGeometry(12,15,0);
-    var geometryBall = new THREE.SphereGeometry(1, 15, 15);
+    var geometryBall = new THREE.SphereGeometry(1, 30, 30);
     var geometryBox = new THREE.BoxGeometry(1, 1, 1);
 
     var points = [];
@@ -37,28 +37,26 @@
     var materialBox = new THREE.MeshBasicMaterial({ color: 	0xffc0cb});
 
     var back = new THREE.Mesh(geometrybackground, materialbackground);
-    back.position.set(0, 0, -10);
+    back.position.set(0, 0, -10.5);
     
     scene.add(back);
 
     var ball = new THREE.Mesh(geometryBall, materialBall);
     ball.scale.set(0.25, 0.25, 0.25)
-    ball.position.set(0, 0, -9);
+    ball.position.set(0, 0, -10);
     scene.add(ball);
 
     var paddleA = new THREE.Mesh(geometryBox, materialBox);
-    paddleA.position.set(0, -7, -9);
-    paddleA.scale.set(2, 0.25, 0.25);
+    paddleA.position.set(0, -7, -10);
+    paddleA.scale.set(2.5, 0.25, 0.25);
     scene.add(paddleA);
 
     var paddleB = new THREE.Mesh(geometryBox, materialBox);
-    paddleB.position.set(0, 7, -9);
-    paddleB.scale.set(2, 0.25, 0.25);
+    paddleB.position.set(0, 6, -10);
+    paddleB.scale.set(2.5, 0.25, 0.25);
     scene.add(paddleB);
-
-    var ballSpeedX = 0.05;
+    var ballSpeedX = -0.05;
     var ballSpeedY = 0.05;
-
     function moveBall() {
         var pixelPosition = new THREE.Vector3();
         pixelPosition.copy(ball).project(camera);
@@ -83,17 +81,48 @@
         }
 
         // Check for collisions with the paddles
+        var col1 =0xff0000;
+        var col2 =0xff66ff;
+        var col3 =0x009933;
+        if (ballY > paddleA.position.y - 0.5 && ballY < paddleA.position.y + 0.5 && ballX > paddleA.position.x - 1 && ballX < paddleA.position.x + 1) {
+            ballSpeedY = Math.abs(ballSpeedY);
+            var r =Math.floor(Math.random() * 3)
+            console.log(r);
+            switch (r){
+                case 0:
+                    materialbackground.color.setHex( col1);
+                    break;
+                case 1:
+                    materialbackground.color.setHex( col2 );
+                    break;
+                default:
+                    materialbackground.color.setHex( col3 );
+            }
 
-        if (ballY > paddleA.position.y - 0.25 && ballY < paddleA.position.y + 0.25 && ballX > paddleA.position.x - 1 && ballX < paddleA.position.x + 1 ||
-            ballY > paddleB.position.y - 0.25 && ballY < paddleB.position.y + 0.25 && ballX > paddleB.position.x - 1 && ballX < paddleB.position.x + 1) {
-            ballSpeedY = -ballSpeedY;
+        }
+        if(ballY > paddleB.position.y - 0.5 && ballY < paddleB.position.y + 0.5 && ballX > paddleB.position.x - 1 && ballX < paddleB.position.x + 1){
+            ballSpeedY = -Math.abs(ballSpeedY);
+            var r =Math.floor(Math.random() *3)
+            console.log(r);
+            switch (r){
+                case 0:
+                    materialbackground.color.setHex( col1);
+                    break;
+                case 1:
+                    materialbackground.color.setHex( col2 );
+                    break;
+                default:
+                    materialbackground.color.setHex( col3 );
+            }
         }
 
         // Move the ball to its new position
         ball.position.x += ballSpeedX;
         ball.position.y += ballSpeedY;
+        paddleB.position.x=ball.position.x;
+        paddleA.position.x=ball.position.x;
     }
-
+    var a=false;
     // Handle keyboard events
     function handleKeyDown(event) {
         var keyCode = event.keyCode;
@@ -113,19 +142,31 @@
             var x = (pixelPosition.x + 1) / 2 * window.innerWidth;
             //var y = (-pixelPosition.y + 1) / 2 * window.innerHeight;
             if(x < window.innerWidth/3) paddleA.position.x += 0.3;
+        } else if (keyCode == 32) {
+            ball.position.set(0, 0, -10);
+        }else if(keyCode == 81){
+            a= !a;
+            if(a){
+                scene.position.set(0,9,0);
+                scene.rotation.set(-Math.PI/5,0,0);
+            }else{
+                scene.position.set(0,0,0);
+                scene.rotation.set(0,0,0);
+            }
         }
 
     }
     function movePaddleA(event) {
-        var mouseX = event.clientX / window.innerHeight * 8 - 4;
-        if (mouseX < -2.5)   mouseX = -2.5;
-        if (mouseX > 2.5)  mouseX = 2.5;
+        var mouseX = event.clientX / window.innerWidth * 8 -4;
+        console.log(event.clientX);
+        //if (mouseX < -2.5)   mouseX = -2.5;
+        if (mouseX > 6)  mouseX = 6;
         paddleA.position.x = mouseX;
     }
     function movePaddleB(event) {
-        var mouseX = event.clientX / window.innerHeight * 8 - 4;
-        if (mouseX < -2.5) mouseX = -2.5;
-        if (mouseX > 2.5)mouseX = 2.5;
+        var mouseX = event.clientX / window.innerWidth * 8 - 4;
+
+        if (mouseX >6)mouseX = 6;
         paddleB.position.x = mouseX;
     }
 
