@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Ping Pong Game with Three.js</title>
+    <style>
+        body { margin: 0; }
+    </style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.socket.io/4.3.2/socket.io.min.js"
+        integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs"
+        crossorigin="anonymous"></script>
+<script src="../js/index.js"></script>
+<script type="module">
+   
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    scene.position.set(0,9,0);
+    scene.rotation.set(-Math.PI/5,0,0);
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    var geometrybackground = new THREE.BoxGeometry(12,15,0);
+    var geometryBall = new THREE.SphereGeometry(1, 15, 15);
+    var geometryBox = new THREE.BoxGeometry(1, 1, 1);
+
+    var points = [];
+    points.push( new THREE.Vector3( - 10, 0, 0 ) );
+    points.push( new THREE.Vector3( 0, 10, 0 ) );
+    points.push( new THREE.Vector3( 10, 0, 0 ) );
+
+    var materialbackground = new THREE.MeshBasicMaterial({ color: 0x123213 });
+    var materialBall = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    var materialBox = new THREE.MeshBasicMaterial({ color: 	0xffc0cb});
+
+    var back = new THREE.Mesh(geometrybackground, materialbackground);
+    back.position.set(0, 0, -10);
+    
+    scene.add(back);
+
+    var ball = new THREE.Mesh(geometryBall, materialBall);
+    ball.scale.set(0.25, 0.25, 0.25)
+    ball.position.set(0, 0, -9);
+    scene.add(ball);
+
+    var paddleA = new THREE.Mesh(geometryBox, materialBox);
+    paddleA.position.set(0, -7, -9);
+    paddleA.scale.set(2, 0.25, 0.25);
+    scene.add(paddleA);
+
+    var paddleB = new THREE.Mesh(geometryBox, materialBox);
+    paddleB.position.set(0, 7, -9);
+    paddleB.scale.set(2, 0.25, 0.25);
+    scene.add(paddleB);
+
+    var ballSpeedX = 0.05;
+    var ballSpeedY = 0.05;
+
+    function moveBall() {
+        var pixelPosition = new THREE.Vector3();
+        pixelPosition.copy(ball).project(camera);
+
+        // Convert the pixel coordinates to screen coordinates
+        var x = (pixelPosition.x + 1) / 2 * window.innerWidth;
+        var y = (-pixelPosition.y + 1) / 2 * window.innerHeight;
+
+        var ballX = ball.position.x;
+        var ballY = ball.position.y;
+
+        // Check for collisions with the walls
+        // Convert position to pixel
+
+        var pixelPosition = new THREE.Vector3();
+        pixelPosition.copy(ball.position).project(camera);
+        var x = (pixelPosition.x + 1) / 2 * window.innerWidth;
+        var y = (pixelPosition.y + 1) / 2 * window.innerHeight;
+
+        if (x > window.innerWidth/3 * 2 || x < window.innerWidth/3) {
+            ballSpeedX = -ballSpeedX;
+        }
+
+        // Check for collisions with the paddles
+
+        if (ballY > paddleA.position.y - 0.25 && ballY < paddleA.position.y + 0.25 && ballX > paddleA.position.x - 1 && ballX < paddleA.position.x + 1 ||
+            ballY > paddleB.position.y - 0.25 && ballY < paddleB.position.y + 0.25 && ballX > paddleB.position.x - 1 && ballX < paddleB.position.x + 1) {
+            ballSpeedY = -ballSpeedY;
+        }
+
+        // Move the ball to its new position
+        ball.position.x += ballSpeedX;
+        ball.position.y += ballSpeedY;
+    }
+
+    // Handle keyboard events
+    function handleKeyDown(event) {
+        var keyCode = event.keyCode;
+        if (keyCode == 39) {
+            paddleA.position.x += 0.3;
+            var pixelPosition = new THREE.Vector3();
+            pixelPosition.copy(paddleA.position).project(camera);
+            // Convert the pixel coordinates to screen coordinates
+            var x = ((pixelPosition.x + 1) / 2) * window.innerWidth;
+            //var y = (-pixelPosition.y + 1) / 2 * window.innerHeight;
+            if(x > window.innerWidth/3 * 2) paddleA.position.x -= 0.3;
+        } else if (keyCode == 37) {
+            paddleA.position.x -= 0.3;
+            var pixelPosition = new THREE.Vector3();
+            pixelPosition.copy(paddleA.position).project(camera);
+            // Convert the pixel coordinates to screen coordinates
+            var x = (pixelPosition.x + 1) / 2 * window.innerWidth;
+            //var y = (-pixelPosition.y + 1) / 2 * window.innerHeight;
+            if(x < window.innerWidth/3) paddleA.position.x += 0.3;
+        }
+
+    }
+    function movePaddleA(event) {
+        var mouseX = event.clientX / window.innerHeight * 8 - 4;
+        if (mouseX < -2.5)   mouseX = -2.5;
+        if (mouseX > 2.5)  mouseX = 2.5;
+        paddleA.position.x = mouseX;
+    }
+    function movePaddleB(event) {
+        var mouseX = event.clientX / window.innerHeight * 8 - 4;
+        if (mouseX < -2.5) mouseX = -2.5;
+        if (mouseX > 2.5)mouseX = 2.5;
+        paddleB.position.x = mouseX;
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+
+    function animate() {
+        requestAnimationFrame(animate);
+        moveBall();
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    window.addEventListener('mousemove', function(event) {
+        movePaddleA(event);
+        movePaddleB(event);
+    });
+    animate();
+</script>
+</body>
+</html>
