@@ -36,6 +36,7 @@
 
         var renderer = new THREE.WebGLRenderer();
         //renderer.setClearColorHex( 0x000000, 1 );
+
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
@@ -62,15 +63,24 @@
         paddleB.scale.set(5, 0.25, 0.25);
         scene.add(paddleB);
 
-        var ballSpeedX = 0.1;
-        var ballSpeedY = 0.1;
+        var ballSpeedX = 0.05;
+        var ballSpeedY = 0.05;
 
         function moveBall() {
+            var pixelPosition = new THREE.Vector3();
+            pixelPosition.copy(ball).project(camera);
+
+            // Convert the pixel coordinates to screen coordinates
+            var x = (pixelPosition.x + 1) / 2 * window.innerWidth;
+            var y = (-pixelPosition.y + 1) / 2 * window.innerHeight;
+
             var ballX = ball.position.x;
             var ballY = ball.position.y;
 
             // Check for collisions with the walls
-            if (ballX > 4 || ballX < -4) {
+            // Convert position to pixel
+
+            if (x > innerWidth || x < 0) {
                 ballSpeedX = -ballSpeedX;
             }
 
@@ -91,25 +101,79 @@
 
         if (keyCode == 39) {
           paddleA.position.x += 0.3;
-          /*
-          var normalizedX = (window.innerWidth / window.innerWidth) * 2 - 1;
-          var normalizedY = -(window.innerHeight / window.innerHeight) * 2 + 1;
+          var pixelPosition = new THREE.Vector3();
+          pixelPosition.copy(paddleA.position).project(camera);
+
+          // Convert the pixel coordinates to screen coordinates
+          var x = (pixelPosition.x + 1) / 2 * window.innerWidth;
+          //var y = (-pixelPosition.y + 1) / 2 * window.innerHeight;
+
+/*
+          paddleA.position.x += 0.3;
+          console.log("paddleA.x = " + paddleA.position.x + "paddleA.y" + paddleA.position.y);
+
+          var pixelPosition = new THREE.Vector3();
+          pixelPosition.copy(paddleA.position).project(camera);
+
+          // Convert the pixel coordinates to screen coordinates
+          var x = (pixelPosition.x + 1) / 2 * window.innerWidth;
+          var y = (-pixelPosition.y + 1) / 2 * window.innerHeight;
+
+          console.log("Pixel coordinates: (" + x + ", " + y + ")");
+
+          console.log("pixel X = " + innerWidth + "pixel Y = " + innerHeight);
+
+
+          var normalizedX = (paddleA.position.x  / window.innerWidth) * 2 - 1;
+          var normalizedY = -(paddleA.position.y / window.innerHeight) * 2 + 1;
 
           var position = new THREE.Vector3(normalizedX, normalizedY, 1);
           position.unproject(camera);
-
-          var pixelPosition = new THREE.Vector3();
-          pixelPosition.copy(paddleA.position).project(camera);*/
-
-          if(paddleA.position.x > 12) paddleA.position.x = 12;
+          console.log("pixel to position X = " + position.x + "pixel to position Y = " + position.y);*/
+          if(x > window.innerWidth) paddleA.position.x -= 0.3;
         } else if (keyCode == 37) {
           paddleA.position.x -= 0.3;
-          if(paddleA.position.x < -12) paddleA.position.x = -12;
+          var pixelPosition = new THREE.Vector3();
+          pixelPosition.copy(paddleA.position).project(camera);
+
+          // Convert the pixel coordinates to screen coordinates
+          var x = (pixelPosition.x + 1) / 2 * window.innerWidth;
+          //var y = (-pixelPosition.y + 1) / 2 * window.innerHeight;
+          if(x < 0) paddleA.position.x += 0.3;
         }
 
       }
+      function movePaddleA(event) {
+            var mouseX = event.clientX / window.innerHeight * 8 - 4;
+
+            // Keep the paddle within the game bounds
+            if (mouseX < -2.5) {
+                mouseX = -2.5;
+            }
+            if (mouseX > 2.5) {
+                mouseX = 2.5;
+            }
+
+            // Move the paddle to its new position
+            paddleA.position.x = mouseX;
+        }
+        function movePaddleB(event) {
+              var mouseX = event.clientX / window.innerHeight * 8 - 4;
+
+              // Keep the paddle within the game bounds
+              if (mouseX < -2.5) {
+                  mouseX = -2.5;
+              }
+              if (mouseX > 2.5) {
+                  mouseX = 2.5;
+              }
+
+              // Move the paddle to its new position
+              paddleB.position.x = mouseX;
+          }
 
     document.addEventListener("keydown", handleKeyDown);
+
     // Render the scene
     function animate() {
         requestAnimationFrame(animate);
@@ -119,11 +183,14 @@
 
     // Handle window resizing
     window.addEventListener('resize', function() {
-        console.log("Width" + window.innerWidth);
-        console.log("Height" +  window.innerHeight);
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    // Handle mouse movement
+    window.addEventListener('mousemove', function(event) {
+        movePaddleA(event);
+        movePaddleB(event);
     });
 
     animate();
