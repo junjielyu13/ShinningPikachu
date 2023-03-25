@@ -1,5 +1,5 @@
-// const socket = io('http://192.168.43.240:3000');
-const socket = io('http://localhost:3000');
+const socket = io('http://192.168.43.240:3000');
+//const socket = io('http://localhost:3000');
 socket.on('connect', function () {
   console.log('Connected');
 
@@ -7,13 +7,17 @@ socket.on('connect', function () {
   socket.emit('identity', 1, (response) => console.log('Identity:', response));
 });
 
-socket.on('events', function (data) {
-  console.log('event', data);
-});
+// socket.on('events', function (data) {
+//   console.log('event', data);
+// });
 
 socket.on('response', function (data) {
   console.log('messagedsadasdasd :');
   console.log('message: ' + data);
+});
+
+socket.on('hello', function (data) {
+  console.log('hello from enemy' + data);
 });
 
 // socket.on('response', (msg) => {
@@ -22,7 +26,7 @@ socket.on('response', function (data) {
 // });
 
 socket.on('exception', function (data) {
-  console.log('event', data);
+  console.log('exception', data);
 });
 
 socket.on('disconnect', function () {
@@ -45,5 +49,5 @@ window.addEventListener('mousemove', function (event) {
 socket.on('move', function (data) {
   console.log('recib');
   console.log(data);
-  movePaddleB(data);
+  movePaddleB(data * -1);
 });

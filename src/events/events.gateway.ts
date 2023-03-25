@@ -25,13 +25,26 @@ export class EventsGateway {
   server: Server;
   wsClients = [];
   playerNum = 0;
-  id = 10000;
-  playerDic = [];
+  num = 0;
+  playerDic = {};
 
   handleConnection(client: any) {
-    Logger.log('"push!!!');
     this.wsClients.push(client);
-    Logger.log('num: ', this.wsClients.length);
+    this.playerDic[client.id] = { client: client, enemy: null };
+    this.num++;
+
+    Logger.log(this.num);
+    if (this.num == 2) {
+      for (const key in this.playerDic) {
+        if (this.playerDic[key].enemy == null) {
+          this.playerDic[key].enemy = client;
+          this.playerDic[client.id].enemy = this.playerDic[key].client;
+        }
+      }
+      this.num = 0;
+      client.emit('hello', JSON.stringify(client.id));
+      // this.playerDic[client.id].enemy.emit('hello', 'helllllllo');
+    }
   }
 
   handleDisconnect(client) {
@@ -88,6 +101,9 @@ export class EventsGateway {
     @MessageBody() data: number,
     @ConnectedSocket() client: Socket,
   ): Promise<any> {
-    this.broadcast('move', data);
+    if (this.playerDic[client.id].enemy) {
+      this.playerDic[client.id].enemy.emit('move', JSON.stringify(data));
+    }
+    // this.broadcast('move', data);
   }
 }
